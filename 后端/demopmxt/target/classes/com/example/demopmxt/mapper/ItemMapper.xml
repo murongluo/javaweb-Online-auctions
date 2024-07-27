@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.demopmxt.mapper.ItemMapper">
+
+    <resultMap id="ItemDetailMap" type="com.example.demopmxt.pojo.ItemVo">
+        <id column="itemId" property="itemId"/>
+        <result column="name" property="name"/>
+        <result column="description" property="description"/>
+        <result column="category" property="category"/>
+        <result column="startingPrice" property="startingPrice"/>
+        <result column="listingDate" property="listingDate"/>
+        <result column="status" property="status"/>
+        <result column="image" property="image"/>
+
+        <association property="seller" javaType="com.example.demopmxt.pojo.User">
+            <id column="userId" property="userId"/>
+            <result column="username" property="username"/>
+        </association>
+    </resultMap>
+
+ <select id="itemlist" resultMap="ItemDetailMap">
+     SELECT
+     i.itemId, i.name, i.description, i.category, i.startingPrice,
+     i.listingDate, i.status, i.image,
+     u.userId, u.username
+     FROM
+     item i
+     JOIN
+     user u ON i.sellerId = u.userId
+     <where>
+         <if test="itemId != null">
+             AND i.itemId = #{itemId}
+         </if>
+         <if test="name != null and name.trim() != ''">
+             AND i.name  LIKE CONCAT('%', #{name}, '%')
+         </if>
+         <if test="status != null and status.trim() != ''">
+             AND i.status = #{status}
+         </if>
+     <if test="sellername !=null and sellername.trim() != ''">
+             AND u.username LIKE CONCAT('%', #{sellername}, '%')
+     </if>
+     <if test="sellerId!=null">
+         and i.sellerId=#{sellerId}
+     </if>
+     </where>
+
+ </select>
+
+ <delete id="delitem">
+  delete from item where itemId=#{id}
+ </delete>
+
+ <update id="upitem">
+  update item
+                <set>
+                    <if test="name!=null and name.trim()!=''">
+                    name=#{name}
+                    </if>
+                    <if test="description!=null and description.trim()!=''">
+                    , description=#{description}
+                    </if>
+                    <if test="category!=null and category.trim()!=''">
+                    , category=#{category}
+                    </if>
+                    <if test="status!=null and status.trim()!=''">
+                    , status=#{status}
+                    </if>
+                    <if test="image!=null and image.trim()!=''">
+                    ,image=#{image}
+                    </if>
+                    <if test="startingPrice!=null">
+                    ,startingPrice=#{startingPrice}
+                    </if>
+                where itemId=#{itemId}
+                </set>
+ </update>
+
+    <insert id="additem">
+        insert into item (sellerId,name,description,category,startingPrice,image,listingDate)
+        values (#{sellerId},#{name},#{description},#{category},#{startingPrice},#{image},#{formattedDateTime})
+    </insert>
+</mapper>

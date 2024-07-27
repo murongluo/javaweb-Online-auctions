@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.demopmxt.mapper.MessagesMapper">
+    <resultMap id="MessagesVoResult" type="com.example.demopmxt.pojo.MessagesVo">
+        <id property="messageId" column="messageId" />
+        <result property="messageText" column="messageText" />
+        <result property="sentTime" column="sentTime" />
+        <result property="status" column="status" />
+        <association property="sender" javaType="com.example.demopmxt.pojo.User">
+            <result property="userId" column="sender_userId" />
+            <result property="username" column="sender_username" />
+            <result property="email" column="sender_email" />
+            <result property="phoneNumber" column="sender_phoneNumber" />
+            <result property="address" column="sender_address" />
+            <result property="userType" column="sender_userType" />
+            <result property="createDate" column="sender_createDate" />
+            <result property="lastLoginDate" column="sender_lastLoginDate" />
+            <result property="money" column="sender_money" />
+        </association>
+
+        <association property="receiver" javaType="com.example.demopmxt.pojo.User">
+            <result property="userId" column="receiver_userId" />
+            <result property="username" column="receiver_username" />
+            <result property="email" column="receiver_email" />
+            <result property="phoneNumber" column="receiver_phoneNumber" />
+            <result property="address" column="receiver_address" />
+            <result property="userType" column="receiver_userType" />
+            <result property="createDate" column="receiver_createDate" />
+            <result property="lastLoginDate" column="receiver_lastLoginDate" />
+            <result property="money" column="receiver_money" />
+        </association>
+
+    </resultMap>
+    <select id="messageList" resultMap="MessagesVoResult">
+        SELECT
+            m.messageId, m.messageText, m.sentTime, m.status,
+            sender.userId AS 'sender_userId', sender.username AS 'sender_username', sender.email AS 'sender_email',
+                sender.phoneNumber AS 'sender_phoneNumber', sender.address AS 'sender_address', sender.userType AS 'sender_userType',
+                sender.createDate AS 'sender_createDate', sender.lastLoginDate AS 'sender_lastLoginDate', sender.money AS 'sender_money',
+                receiver.userId AS 'receiver_userId', receiver.username AS 'receiver_username', receiver.email AS 'receiver_email',
+                receiver.phoneNumber AS 'receiver_phoneNumber', receiver.address AS 'receiver_address', receiver.userType AS 'receiver_userType',
+                receiver.createDate AS 'receiver_createDate', receiver.lastLoginDate AS 'receiver_lastLoginDate', receiver.money AS 'receiver_money'
+        FROM messages m
+                 JOIN users sender ON m.senderId = sender.userId
+                 JOIN users receiver ON m.receiverId = receiver.userId
+    </select>
+
+    <insert id="add">
+        insert into messages(senderId,receiverId,messageText,sentTime) values (#{senderId},#{receiverId},#{massageText},#{sentTime})
+    </insert>
+
+<update id="read">
+    update messages set status ="read" where messageId =#{id}
+</update>
+<delete id="del">
+    delete from messages where messageId =#{id}
+</delete>
+</mapper>

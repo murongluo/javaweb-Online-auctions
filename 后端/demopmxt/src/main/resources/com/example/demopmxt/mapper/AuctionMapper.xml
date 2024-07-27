@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demopmxt.mapper.AuctionMapper">
+
+    <select id="autionList" resultType="com.example.demopmxt.pojo.Auction">
+        select * from auction
+                <where>
+                    <if test="auctionId!=null">
+                        auctionId=#{auctionId}
+                    </if>
+                    <if test="description!=null and description.trim()!=''">
+                        and description LIKE CONCAT('%', #{description}, '%')
+                    </if>
+                    <if test="title!=null and title.trim()!=''">
+                        and title LIKE CONCAT('%', #{title}, '%')
+                    </if>
+                    <if test="status!=null and status.trim()!=''">
+                        and status=#{status}
+                    </if>
+                    <if test="startDate!=null and startDate.trim()!='' and endDate!=null and endDate.trim()!=''">
+                        and endDate <![CDATA[<=]]> #{endDate} and startDate <![CDATA[>=]]> #{startDate}
+
+                    </if>
+                </where>
+    </select>
+
+    <insert id="addauction">
+        insert into  auction(title,description,startDate,endDate,image)values (#{title},#{description},#{startDate},#{endDate},#{image})
+    </insert>
+
+    <delete id="del">
+        delete from auction where auctionId = #{id}
+    </delete>
+
+    <update id="upauction">
+        update  auction
+            <set>
+                image=#{image}
+                <if test="title!=null and title.trim()!=''">
+                    ,title=#{title}
+                </if>
+                <if test="description!=null and description.trim()!=''">
+                   , description= #{description}
+                </if>
+                <if test="status!=null and status.trim()!=''">
+                   , status= #{status}
+                </if>
+                <if test="startDate!=null and startDate.trim()!=''">
+                   , startDate =#{startDate}
+                </if>
+                <if test="endDate!=null and endDate.trim()!=''">
+                   , endDate= #{endDate}
+                </if>
+        where
+                auctionId = #{auctionId}
+            </set>
+    </update>
+
+
+
+
+
+
+
+
+</mapper>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+        <!DOCTYPE mapper
+                PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demopmxt.mapper.UserMapper">
+
+        <select id="userList" resultType="com.example.demopmxt.pojo.User">
+                select * from user
+                <where>
+                        <if test="userId!=null ">
+                                userId=#{userId}
+                        </if>
+                        <if test="username!=null and username.trim()!=''">
+                                and username LIKE CONCAT('%', #{username}, '%')
+                        </if>
+                        <if test="userType!=null and userType.trim()!=''">
+                                and userType=#{userType}
+                         </if>
+                </where>
+        </select>
+
+        <delete id="delUserById">
+                delete from user where userId=#{userId}
+        </delete>
+
+        <update id="upUser">
+                update user
+                <set>
+                        <if test="username!=null and username.trim()!=''">
+                                username=#{username}
+                        </if>
+                        <if test="password!=null and password.trim()!=null">
+                                , password=#{password}
+                        </if>
+                        <if test="address!=null and address.trim()!=''">
+                                , address=#{address}
+                        </if>
+                        <if test="email!=null and email.trim()!=''">
+                                , email=#{email}
+                        </if>
+                        <if test="userType!=null and userType.trim()!=''">
+                                , userType=#{userType}
+                        </if>
+                        <if test="image !=null and image.trim()!=''">
+                                , image=#{image}
+                        </if>
+                        where userId = #{userId}
+                </set>
+
+        </update>
+
+        <insert id="adduser">
+                insert into user (username,password,image,email,address,createDate)values (#{username},#{password},#{image},#{email},#{address},#{now})
+        </insert>
+        <select id="login"  resultType="com.example.demopmxt.pojo.User">
+            select * from user where userId=#{userId} and password= #{password}
+        </select>
+
+        <update id="forgot">
+                update user set password=#{randomString} where email=#{email} and userId =#{userId}
+        </update>
+
+        <select id="getUserByEmail" resultType="com.example.demopmxt.pojo.User">
+                select * from  user where email =#{email}
+        </select>
+        <select id="select" resultType="com.example.demopmxt.pojo.User">
+                select * from  user where  email =#{email} and userId =#{userId}
+        </select>
+
+</mapper>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demopmxt.mapper.BidMapper">
+    <!-- Seller User ResultMap -->
+    <resultMap id="SellerResultMap" type="com.example.demopmxt.pojo.User">
+        <id column="seller_userId" property="userId" />
+        <result column="seller_username" property="username" />
+        <result column="seller_email" property="email" />
+        <result column="seller_address" property="address" />
+        <result column="seller_userType" property="userType" />
+        <result column="seller_createDate" property="createDate" />
+        <result column="seller_lastLoginDate" property="lastLoginDate" />
+        <result column="seller_image" property="image" />
+    </resultMap>
+
+    <!-- Bidder User ResultMap -->
+    <resultMap id="BidderResultMap" type="com.example.demopmxt.pojo.User">
+        <id column="bidder_userId" property="userId" />
+        <result column="bidder_username" property="username" />
+        <result column="bidder_email" property="email" />
+        <result column="bidder_address" property="address" />
+        <result column="bidder_userType" property="userType" />
+        <result column="bidder_createDate" property="createDate" />
+        <result column="bidder_lastLoginDate" property="lastLoginDate" />
+        <result column="bidder_image" property="image" />
+    </resultMap>
+
+    <!-- ItemVo ResultMap -->
+    <resultMap id="ItemVoResultMap" type="com.example.demopmxt.pojo.ItemVo">
+        <id column="item_itemId" property="itemId" />
+        <result column="item_itemName" property="name" />
+        <result column="item_itemDescription" property="description" />
+        <result column="item_itemCategory" property="category" />
+        <result column="item_startingPrice" property="startingPrice" />
+        <result column="item_listingDate" property="listingDate" />
+        <result column="item_itemStatus" property="status" />
+        <result column="item_itemImage" property="image" />
+        <association property="seller" javaType="com.example.demopmxt.pojo.User" resultMap="SellerResultMap"/>
+    </resultMap>
+
+    <!-- BidVo ResultMap -->
+    <resultMap id="BidVoMap" type="com.example.demopmxt.pojo.BidVo">
+        <id column="bid_bidId" property="bidId" />
+        <result column="bid_bidAmount" property="bidAmount" />
+        <result column="bid_bidTime" property="bidTime" />
+        <result column="bid_status" property="status" />
+        <association property="item" javaType="com.example.demopmxt.pojo.ItemVo" resultMap="ItemVoResultMap"/>
+        <association property="bidder" javaType="com.example.demopmxt.pojo.User" resultMap="BidderResultMap"/>
+    </resultMap>
+
+    <select id="bidslist" resultMap="BidVoMap">
+        SELECT
+        b.bidId as "bid_bidId",
+        b.bidAmount as "bid_bidAmount",
+        b.bidTime as "bid_bidTime",
+        b.status as "bid_status",
+        i.itemId as "item_itemId",
+        i.name as "item_itemName",
+        i.description as "item_itemDescription",
+        i.category as "item_itemCategory",
+        i.startingPrice as "item_startingPrice",
+        i.listingDate as "item_listingDate",
+        i.status as "item_itemStatus",
+        i.image as "item_itemImage",
+        u1.userId as "seller_userId",
+        u1.username as "seller_username",
+        u1.email as "seller_email",
+        u1.address as "seller_address",
+        u1.userType as "seller_userType",
+        u1.createDate as "seller_createDate",
+        u1.lastLoginDate as "seller_lastLoginDate",
+        u1.image as "seller_image",
+        u2.userId as "bidder_userId",
+        u2.username as "bidder_username",
+        u2.email as "bidder_email",
+        u2.address as "bidder_address",
+        u2.userType as "bidder_userType",
+        u2.createDate as "bidder_createDate",
+        u2.lastLoginDate as "bidder_lastLoginDate",
+        u2.image as "bidder_image"
+        FROM bid b
+        JOIN item i ON b.itemId = i.itemId
+        JOIN user u1 ON i.sellerId = u1.userId
+        JOIN user u2 ON b.bidderId = u2.userId
+        <where>
+            <if test="status != null and status.trim() != ''">
+                AND b.status =#{status}
+            </if>
+            <if test="name!=null and name.trim()!=''">
+                AND i.name  LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="sellername!=null and sellername.trim()!=''">
+                AND u1.username  LIKE CONCAT('%', #{sellername}, '%')
+            </if>
+            <if test="bidname!=null and bidname.trim()!=''">
+                AND u2.username  LIKE CONCAT('%', #{bidname}, '%')
+            </if>
+            <if test="bidId!=null">
+                AND b.bidId =#{bidId}
+            </if>
+        <if test="itemId!=null">
+           and i.itemId=#{itemId}
+        </if>
+        <if test="bidderId!=null">
+            and b.bidderId=#{bidderId}
+        </if>
+        </where>
+        ORDER BY b.bidId ASC
+    </select>
+
+    <insert id="add">
+        insert into bid (itemId,bidderId,bidAmount,bidTime)values (#{itemId},#{bidderId},#{bidAmount},#{formattedDateTime})
+    </insert>
+
+    <delete id="del">
+        delete from bid where bidId=#{id}
+    </delete>
+
+    <update id="up">
+        update bid set status='竞价失败' where itemId=#{itemId}
+
+    </update>
+
+</mapper>

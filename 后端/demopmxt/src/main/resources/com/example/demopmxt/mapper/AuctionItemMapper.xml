@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demopmxt.mapper.AuctionItemMapper">
+
+    <!-- Result map for User -->
+    <!-- Result map for AuItVo, including nested associations -->
+    <resultMap id="UserResultMap" type="com.example.demopmxt.pojo.User">
+        <id property="userId" column="seller_userId"/>
+        <result property="username" column="seller_username"/>
+        <result property="password" column="seller_password"/>
+        <result property="email" column="seller_email"/>
+        <result property="address" column="seller_address"/>
+        <result property="userType" column="seller_userType"/>
+        <result property="createDate" column="seller_createDate"/>
+        <result property="lastLoginDate" column="seller_lastLoginDate"/>
+        <result property="image" column="seller_image"/>
+    </resultMap>
+
+    <!-- ResultMap for ItemVo -->
+    <resultMap id="ItemVoResultMap" type="com.example.demopmxt.pojo.ItemVo">
+        <id property="itemId" column="item_itemId"/>
+        <result property="name" column="item_name"/>
+        <result property="description" column="item_description"/>
+        <result property="category" column="item_category"/>
+        <result property="startingPrice" column="item_startingPrice"/>
+        <result property="listingDate" column="item_listingDate"/>
+        <result property="status" column="item_status"/>
+        <result property="image" column="item_image"/>
+        <association property="seller" javaType="com.example.demopmxt.pojo.User" resultMap="UserResultMap"/>
+    </resultMap>
+
+    <!-- ResultMap for Auction -->
+    <resultMap id="AuctionResultMap" type="com.example.demopmxt.pojo.Auction">
+        <id property="auctionId" column="auction_auctionId"/>
+        <result property="title" column="auction_title"/>
+        <result property="description" column="auction_description"/>
+        <result property="startDate" column="auction_startDate"/>
+        <result property="endDate" column="auction_endDate"/>
+        <result property="status" column="auction_status"/>
+        <result property="image" column="auction_image"/>
+    </resultMap>
+
+    <!-- ResultMap for AuItVo -->
+    <resultMap id="AuItVoResultMap" type="com.example.demopmxt.pojo.AuItVo">
+        <id property="auctionItemId" column="auIt_auctionItemId"/>
+        <result property="reservePrice" column="auIt_reservePrice"/>
+        <result property="soldPrice" column="auIt_soldPrice"/>
+        <result property="saleStatus" column="auIt_saleStatus"/>
+        <association property="auction" javaType="com.example.demopmxt.pojo.Auction" resultMap="AuctionResultMap"/>
+        <association property="item" javaType="com.example.demopmxt.pojo.ItemVo" resultMap="ItemVoResultMap"/>
+    </resultMap>
+
+    <select id="auitlist" resultMap="AuItVoResultMap">
+        SELECT
+            ai.auctionItemId AS auIt_auctionItemId,
+            ai.reservePrice AS auIt_reservePrice,
+            ai.soldPrice AS auIt_soldPrice,
+            ai.saleStatus AS auIt_saleStatus,
+            -- Auction columns
+            a.auctionId AS auction_auctionId,
+            a.title AS auction_title,
+            a.description AS auction_description,
+            a.startDate AS auction_startDate,
+            a.endDate AS auction_endDate,
+            a.status AS auction_status,
+            a.image AS auction_image,
+            -- Item columns
+            i.itemId AS item_itemId,
+            i.name AS item_name,
+            i.description AS item_description,
+            i.category AS item_category,
+            i.startingPrice AS item_startingPrice,
+            i.listingDate AS item_listingDate,
+            i.status AS item_status,
+            i.image AS item_image,
+            -- User (Seller) columns
+            u.userId AS seller_userId,
+            u.username AS seller_username,
+            u.password AS seller_password,
+            u.email AS seller_email,
+            u.address AS seller_address,
+            u.userType AS seller_userType,
+            u.createDate AS seller_createDate,
+            u.lastLoginDate AS seller_lastLoginDate,
+            u.image AS seller_image
+        FROM auctionitem ai
+                 LEFT JOIN auction a ON ai.auctionId = a.auctionId
+                 LEFT JOIN item i ON ai.itemId = i.itemId
+                 LEFT JOIN user u ON i.sellerId = u.userId
+        <where>
+            <if test="auctionId!=null">
+                ai.auctionId=#{auctionId}
+            </if>
+        <if test="auctionitemId!=null">
+            and ai.auctionItemId=#{auctionitemId}
+        </if>
+        <if test="name!=null and name .trim()!=''">
+            and i.name LIKE CONCAT('%', #{name}, '%')
+        </if>
+            <if test="sellername!=null and sellername .trim()!=''">
+                and u.username LIKE CONCAT('%', #{sellername}, '%')
+            </if>
+            <if test="title!=null and title .trim()!=''">
+                and a.title LIKE CONCAT('%', #{title}, '%')
+            </if>
+        <if test="itemId != null">
+            and ai.itemId=#{itemId}
+        </if>
+        </where>
+
+    </select>
+
+<insert id="add">
+    insert into auctionitem (auctionId,itemId,reservePrice)
+    values (#{auctionId},#{itemId},#{reservePrice})
+</insert>
+
+<update id="up">
+    update auctionitem
+        <set>
+    <if test="soldPrice!=null ">
+        soldPrice=#{soldPrice}
+    </if>
+        <if test="reservePrice!=null">
+        ,reservePrice=#{reservePrice}
+        </if>
+    <if test="saleStatus!=null ">
+        ,saleStatus=#{saleStatus}
+    </if>
+    where auctionItemId=#{auctionItemId}
+</set>
+</update>
+
+<delete id="del" >
+    delete from auctionitem where auctionItemId =#{id}
+</delete>
+
+
+
+</mapper>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demopmxt.mapper.PayMapper">
+
+    <resultMap id="SellerResultMap" type="com.example.demopmxt.pojo.User">
+        <id column="seller_userId" property="userId" />
+        <result column="seller_username" property="username" />
+        <result column="seller_email" property="email" />
+        <result column="seller_address" property="address" />
+        <result column="seller_userType" property="userType" />
+        <result column="seller_createDate" property="createDate" />
+        <result column="seller_lastLoginDate" property="lastLoginDate" />
+        <result column="seller_image" property="image" />
+    </resultMap>
+
+    <!-- ResultMap for ItemVo within PayVo -->
+    <resultMap id="PayItemVoResultMap" type="com.example.demopmxt.pojo.ItemVo">
+        <id column="item_itemId" property="itemId" />
+        <result column="item_name" property="name" />
+        <result column="item_description" property="description" />
+        <result column="item_category" property="category" />
+        <result column="item_startingPrice" property="startingPrice" />
+        <result column="item_listingDate" property="listingDate" />
+        <result column="item_status" property="status" />
+        <result column="item_image" property="image" />
+        <association property="seller" javaType="com.example.demopmxt.pojo.User" resultMap="SellerResultMap" />
+    </resultMap>
+
+    <!-- ResultMap for PayVo -->
+    <resultMap id="PayVoResultMap" type="com.example.demopmxt.pojo.PayVo">
+        <id column="payment_paymentId" property="paymentId" />
+        <result column="payment_amount" property="amount" />
+        <result column="payment_paymentMethod" property="paymentMethod" />
+        <result column="payment_paymentStatus" property="paymentStatus" />
+        <result column="payment_paymentDate" property="paymentDate" />
+        <association property="item" javaType="com.example.demopmxt.pojo.ItemVo" resultMap="PayItemVoResultMap" />
+        <association property="payer" javaType="com.example.demopmxt.pojo.User" resultMap="SellerResultMap" />
+    </resultMap>
+
+<select id="get" resultMap="PayVoResultMap">
+    SELECT p.paymentId as payment_paymentId, p.amount as payment_amount,
+           p.paymentMethod as payment_paymentMethod, p.paymentStatus as payment_paymentStatus,
+           p.paymentDate as payment_paymentDate,
+           i.itemId as item_itemId, i.name as item_name, i.description as item_description,
+           i.category as item_category, i.startingPrice as item_startingPrice,
+           i.listingDate as item_listingDate, i.status as item_status, i.image as item_image,
+           u.userId as payer_userId, u.username as payer_username, u.email as payer_email,
+           u.address as payer_address, u.userType as payer_userType,
+           u.createDate as payer_createDate, u.lastLoginDate as payer_lastLoginDate, u.image as payer_image,
+           s.userId as seller_userId, s.username as seller_username, s.email as seller_email,
+           s.address as seller_address, s.userType as seller_userType,
+           s.createDate as seller_createDate, s.lastLoginDate as seller_lastLoginDate, s.image as seller_image
+    FROM pay p
+             JOIN item i ON p.itemId = i.itemId
+             JOIN user u ON p.payerId = u.userId
+             JOIN user s ON i.sellerId = s.userId
+    <where>
+        <if test="payId !=null ">
+            p.paymentId=#{payId}
+        </if>
+    <if test="paymentStatus != null and paymentStatus.trim()!=''">
+            and p.paymentStatus=#{paymentStatus}
+    </if>
+    <if test="paymentMethod != null and paymentMethod.trim()!='' ">
+            and p.paymentMethod=#{paymentMethod}
+    </if>
+    <if test="payerId!=null">
+        and p.payerId=#{payerId}
+    </if>
+    </where>
+
+    ORDER BY
+        p.paymentId ASC
+</select>
+
+
+
+    <insert id="add">
+        insert into pay (itemId,payerId,amount)values (#{itemId},#{payerId},#{amount})
+    </insert>
+
+
+</mapper>
